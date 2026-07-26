@@ -15,7 +15,6 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
-
 API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
 
@@ -29,9 +28,7 @@ def _get_api_key(api_key: str | None = None) -> str:
     key = api_key or os.environ.get("GEMINI_API_KEY")
 
     if not key:
-        raise GeminiAPIError(
-            "Gemini API key not found. Set GEMINI_API_KEY first."
-        )
+        raise GeminiAPIError("Gemini API key not found. Set GEMINI_API_KEY first.")
 
     return key.strip()
 
@@ -194,15 +191,9 @@ def generate(
         )
 
     parts = candidates[0].get("content", {}).get("parts", [])
-    text_parts = [
-        part["text"]
-        for part in parts
-        if isinstance(part.get("text"), str)
-    ]
+    text_parts = [part["text"] for part in parts if isinstance(part.get("text"), str)]
 
     if not text_parts:
-        raise GeminiAPIError(
-            f"Gemini returned no text content: {result}"
-        )
+        raise GeminiAPIError(f"Gemini returned no text content: {result}")
 
     return "".join(text_parts)

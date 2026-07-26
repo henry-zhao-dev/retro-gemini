@@ -162,3 +162,6 @@ data/*.csv # If these are generated, not source data
 .DS_Store
 __MACOSX
 
+# Project specific
+test.py
+
