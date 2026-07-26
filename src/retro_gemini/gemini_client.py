@@ -140,7 +140,7 @@ def list_model_names(
         name = model.get("name", "")
 
         if name.startswith("models/"):
-            name = name.removeprefix("models/")
+            name = name.replace("models/", "", 1)
 
         if name:
             names.append(name)
@@ -160,7 +160,7 @@ def generate(
         raise ValueError("Prompt cannot be empty.")
 
     if model.startswith("models/"):
-        model = model.removeprefix("models/")
+        model = model.replace("models/", "", 1)
 
     encoded_model = urllib.parse.quote(model, safe="-._")
     url = f"{API_BASE_URL}/models/{encoded_model}:generateContent"
