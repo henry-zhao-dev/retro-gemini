@@ -1,58 +1,103 @@
-# Python
-# ========================
-# Byte-code files
-*.pyc
+# ==========================================
+# 1. Python & Byte-code
+# ==========================================
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
 *.pyd
-*.pyo
 
-# Distribution / Packaging
-*.egg-info/
-.eggs/
-dist/
-build/
-sdist/
-wheel/
-*.egg
-PKG-INFO
-
-# Virtual Environment
-# ========================
-# Ignore the virtual environment itself.
-# Your project's dependencies should be listed in requirements.txt or pyproject.toml
-# and installed by creating a new venv.
-venv/
-.venv/
+# ==========================================
+# 2. Virtual Environments & Package Managers
+# ==========================================
+# Environments
+**venv**
+ENV/
 env/
-.env/
-.python-version
+env.bak/
+venv.bak/
+.python-version  # Pyenv (uncomment if you want to commit team Python version)
+
+# Pip & Package Caches
+.pip-cache/
+pip-selfcheck.json
 pip-wheel-metadata/
 
-# Dependency Management (e.g., Pip, Poetry, Conda)
-# ========================
-# Pip cache
-pip-selfcheck.json
+# uv (Fast Python Package Installer)
+.uv/
 
-# Conda environment file, if generated locally and not intended for sharing
-# or if you use `conda activate myenv` without exporting
-# environment.yml # UNCOMMENT if you generate this locally and don't want to commit it
+# Conda / Poetry / Pipenv (Uncomment lockfiles ONLY if this is a library, not an app)
+# environment.yml
+# poetry.lock
+# Pipfile.lock
 
-# Poetry lock file - usually committed, but if you have a reason not to
-# poetry.lock # UNCOMMENT if you don't want to commit poetry.lock
+# ==========================================
+# 3. Build & Distribution
+# ==========================================
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Operating System Files
-# ========================
-.DS_Store # macOS
-.Trashes # macOS
-ehthumbs.db # Windows
-Thumbs.db # Windows
-Desktop.ini # Windows
-*.fuse_hidden* # Linux
-.nfs* # Linux
+# ==========================================
+# 4. Testing, Code Quality & Coverage
+# ==========================================
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+nosetests.xml
+pytestdebug.log
 
-# IDE / Editor Files
-# ========================
-# PyCharm / IntelliJ IDEA
+# Tox & Nox
+.tox/
+.nox/
+
+# Type Checkers & Linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pytype/
+
+# Property-based testing
+.hypothesis/
+
+# ==========================================
+# 5. Environment Variables & Secrets (CRITICAL)
+# ==========================================
+.env
+.env.*
+!.env.example
+!.env.template
+.flaskenv
+.vaultenv
+.secrets
+secrets.py
+*.pem
+*.key
+
+# ==========================================
+# 6. IDEs & Text Editors
+# ==========================================
+# PyCharm / IntelliJ
 .idea/
 *.iws
 *.iml
@@ -60,108 +105,77 @@ Desktop.ini # Windows
 
 # VS Code
 .vscode/
-# Add this if you want to ignore all user-specific settings,
-# but sometimes parts of .vscode (e.g., launch.json, settings.json for workspace)
-# are useful to commit. Use caution.
-# .vscode/*
-# !.vscode/settings.json # Example exception if you only ignore other things
-# !.vscode/extensions.json
-# !.vscode/launch.json
-# !.vscode/tasks.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
 
-# Sublime Text
+# Sublime Text / Vim / Emacs
 *.sublime-project
 *.sublime-workspace
-
-# Vim
 *.swp
 *.swo
-
-# Emacs
 *~
-#*#
+\#*\#
+.\#*
 
-# Jupyter Notebook
-# ========================
+# ==========================================
+# 7. Operating System Files
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Trashes
+__MACOSX
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.stackdump
+
+# Linux
+*.fuse_hidden*
+.nfs*
+
+# ==========================================
+# 8. Jupyter Notebooks & Docs
+# ==========================================
 .ipynb_checkpoints/
-# Jupyter notebook specific output files, if you have any
+*-checkpoint.ipynb
 .jupyter/
-
-# Test / Coverage
-# ========================
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-nosetests.xml
-
-# MyPy / Type Hinting
-# ========================
-.mypy_cache/
-
-# Ruff (Linter/Formatter)
-# ========================
-.ruff_cache/
-
-# Sphinx Documentation
-# ========================
 docs/_build/
 
-# Miscellaneous
-# ========================
-# Logs
+# ==========================================
+# 9. Databases, Logs & Generated Outputs
+# ==========================================
 *.log
 *.log.[0-9]*
-tmp/
-.gitkeep # Generally not needed, but sometimes used for empty folders
-
-# Database files (e.g., for Django/Flask development)
 *.sqlite3
 *.db
 db.sqlite3
+tmp/
+output/
 
-# Environment variables files (IMPORTANT: Do NOT commit sensitive data!)
-.env
-.flaskenv
-.vaultenv
-.secrets
-secrets.py # If you have a separate file for secrets, ensure it's ignored!
+# Data directory patterns (uncomment if generating dynamic datasets)
+# data/*.pickle
+# data/*.pkl
+# data/*.csv
 
-# Cloud / Platform specific files
-# ========================
-# Google App Engine
-# .gcloudignore is often used instead of .gitignore for GAE deployment.
-# If you are using GAE, make sure to configure .gcloudignore properly.
-
-# Serverless Framework
+# ==========================================
+# 10. Cloud & Infrastructure (Optional)
+# ==========================================
 .serverless/
-
-# Docker
-.dockerignore # This file itself should be committed
-# If you have locally generated Docker-related files:
-docker-compose.override.yml # If you're using this for local dev and not for production
-*.tmp.dockerfile
-
-# Terraform
 .terraform/
 .terraform.lock.hcl
 *.tfplan
 *.tfstate
 *.tfstate.backup
-
-# Generated output files
-# ========================
-# Often generated by scripts or data processing
-output/
-data/*.pickle
-data/*.pkl
-data/*.csv # If these are generated, not source data
-
-# Mac OS X
-._*
-.DS_Store
-__MACOSX
-
-# Project specific
-test.py
-
+docker-compose.override.yml
+*.tmp.dockerfile
