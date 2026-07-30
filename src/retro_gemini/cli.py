@@ -7,7 +7,7 @@ from prompt_toolkit import prompt
 from retro_gemini import gemini_client
 
 
-def start_chat(model: str):
+def start_chat(model: str, no_history: bool):
     # Header Layout
     print("=" * 60)
     print("Retro Gemini CLI")
@@ -17,6 +17,8 @@ def start_chat(model: str):
     print("   * Press 'Esc+Enter' to submit")
     print("   * Type 'exit' or 'quit' to leave")
     print("=" * 60 + "\n")
+
+    history: list[str] = []
 
     while True:
         try:
@@ -30,11 +32,22 @@ def start_chat(model: str):
                 print("\nGoodbye!\n")
                 break
 
+            if not no_history:
+                history.append(f"User: {user_input}")
+                user_input = (
+                    "Continue the conversation naturally, taking into account "
+                    "the conversation history below.\n" + 
+                    "\n\n".join(history)
+                )
+
             response = gemini_client.generate(user_input, model)
 
             print("\nGemini:")
             print(response)
             print("\n" + "-" * 60 + "\n")
+
+            if not no_history:
+                history.append(f"Model: {response}")
 
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye!")
@@ -58,6 +71,12 @@ def main():
         default="gemini-flash-latest",
         help="Specify Gemini model to use (default: gemini-flash-latest)",
     )
+    parser.add_argument(
+        "-n",
+        "--no-history",
+        action="store_true",
+        help="Do not reference conversation history at any turn",
+    )
 
     args = parser.parse_args()
 
@@ -74,7 +93,7 @@ def main():
     if args.list:
         print("\n".join(model_names))
     elif args.model in model_names:
-        start_chat(args.model)
+        start_chat(args.model, args.no_history)
     else:
         print(
             f"Model not found: {args.model}.\n"
