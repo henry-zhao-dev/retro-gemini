@@ -149,32 +149,21 @@ def list_model_names(
 
 
 def generate(
-    prompt: str,
+    payload: dict,
     model: str,
     *,
     api_key: str | None = None,
 ) -> str:
-    """Send a text prompt to a model and return its text response."""
+    """Send payload to a model and return its text response."""
 
-    if not prompt.strip():
-        raise ValueError("Prompt cannot be empty.")
+    if not payload:
+        raise ValueError("Payload cannot be empty.")
 
     if model.startswith("models/"):
         model = model.replace("models/", "", 1)
 
     encoded_model = urllib.parse.quote(model, safe="-._")
     url = f"{API_BASE_URL}/models/{encoded_model}:generateContent"
-
-    payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [
-                    {"text": prompt},
-                ],
-            }
-        ]
-    }
 
     result = _request_json(
         url,
@@ -197,3 +186,21 @@ def generate(
         raise GeminiAPIError(f"Gemini returned no text content: {result}")
 
     return "".join(text_parts)
+
+
+def single_payload(prompt: str) -> dict:
+    """Wrap a single prompt into a Gemini API payload."""
+    
+    if not prompt.strip():
+        raise ValueError("Prompt cannot be empty.")
+
+    return {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [
+                    { "text": prompt }
+                ]
+            }
+        ]
+    }

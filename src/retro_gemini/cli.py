@@ -1,13 +1,36 @@
 import argparse
 import os
 import sys
+from dataclasses import dataclass
+from datetime import datetime
 
 from prompt_toolkit import prompt
 
 from retro_gemini import gemini_client
 
 
-def start_chat(model: str, no_history: bool):
+@dataclass(frozen=True)
+class MessageLog:
+    timestamp: str
+    role: str
+    content: str
+
+    @classmethod
+    def create(cls, role: str, content: str):
+        """Factory method to easily create a new log with current timestamp."""
+        return cls(
+            # Example: 2023-10-24T14:32:05.123456
+            timestamp=datetime.now().isoformat(),
+            role=role,
+            content=content
+        )
+
+    def to_api_payload(self) -> dict:
+        """Strips the timestamp for the LLM API."""
+        return {"role": self.role, "parts": [ {"text": self.content} ]}
+
+
+def start_chat(model: str, no_history: bool = False):
     # Header Layout
     print("=" * 60)
     print("Retro Gemini CLI")
@@ -18,36 +41,36 @@ def start_chat(model: str, no_history: bool):
     print("   * Type 'exit' or 'quit' to leave")
     print("=" * 60 + "\n")
 
-    history: list[str] = []
+    history: list[MessageLog] = []
 
     while True:
         try:
             print("You:")
-            user_input = prompt("> ", multiline=True).strip()
+            user_prompt = prompt("> ", multiline=True).strip()
 
-            if not user_input:
+            if not user_prompt:
                 continue
 
-            if user_input.lower() in ("exit", "quit"):
+            if user_prompt.lower() in ("exit", "quit"):
                 print("\nGoodbye!\n")
                 break
 
             if not no_history:
-                history.append(f"User: {user_input}")
-                user_input = (
-                    "Continue the conversation naturally, taking into account "
-                    "the conversation history below.\n" + 
-                    "\n\n".join(history)
-                )
+                log = MessageLog.create("user", user_prompt)
+                history.append(log)
+                payload = {"contents": [log.to_api_payload() for log in history]}
+            else:
+                payload = gemini_client.single_payload(user_prompt)
 
-            response = gemini_client.generate(user_input, model)
+            response = gemini_client.generate(payload, model)
 
             print("\nGemini:")
             print(response)
             print("\n" + "-" * 60 + "\n")
 
             if not no_history:
-                history.append(f"Model: {response}")
+                log = MessageLog.create("model", response)
+                history.append(log)
 
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye!")
@@ -75,7 +98,7 @@ def main():
         "-n",
         "--no-history",
         action="store_true",
-        help="Do not reference conversation history at any turn",
+        help="Process prompt without sending previous conversation history",
     )
 
     args = parser.parse_args()

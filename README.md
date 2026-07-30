@@ -83,6 +83,14 @@ Display all available Gemini models linked to your API key:
 retro-gemini --list
 ```
 
+### Disable Context Memory
+
+Every turn is treated as a brand new conversation:
+
+```bash
+retro-gemini --no-history
+```
+
 ---
 
 ## Chat Controls
