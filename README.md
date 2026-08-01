@@ -14,25 +14,29 @@ A lightweight, interactive command-line interface (CLI) for chatting with Google
 ## Prerequisites
 
 - **Python 3.8+**
+- **[Poetry](https://python-poetry.org/docs/#installation)** installed on your machine
 - A **Google Gemini API Key** (Get one from [Google AI Studio](https://aistudio.google.com/))
 
 ---
 
 ## Installation
 
-1. Clone or download this repository.
-2. Create and activate a virtual environment:
+1. Clone or download this repository:
+   ```bash
+   git clone https://github.com/henry-zhao-dev/retro-gemini.git
+   cd retro-gemini
+   ```
 
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-```
+2. Install the project and dependencies:
+   ```bash
+   poetry install
+   ```
 
-3. Simply run:
-
-```bash
-pip install -e .
-```
+3. Activate the virtual environment so the CLI command is available:
+   ```bash
+   eval $(poetry env activate)
+   ```
+   *(Note: You can also skip activation and prefix the commands below with `poetry run`, e.g., `poetry run retro-gemini`).*
 
 ---
 
