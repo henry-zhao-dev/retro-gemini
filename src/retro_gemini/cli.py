@@ -22,12 +22,12 @@ class MessageLog:
             # Example: 2023-10-24T14:32:05.123456
             timestamp=datetime.now().isoformat(),
             role=role,
-            content=content
+            content=content,
         )
 
     def to_api_payload(self) -> dict:
         """Strips the timestamp for the LLM API."""
-        return {"role": self.role, "parts": [ {"text": self.content} ]}
+        return {"role": self.role, "parts": [{"text": self.content}]}
 
 
 def start_chat(model: str, no_history: bool = False):
@@ -74,6 +74,20 @@ def start_chat(model: str, no_history: bool = False):
 
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye!")
+            break
+
+        except gemini_client.GeminiAPIError as e:
+            if "503" in str(e):
+                print(
+                    "Gemini servers are currently overloaded. "
+                    "Please wait a minute and try again."
+                )
+            else:
+                print(f"A Gemini API error occurred: {e}")
+            break
+
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
             break
 
 

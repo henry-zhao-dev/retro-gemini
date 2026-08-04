@@ -190,17 +190,8 @@ def generate(
 
 def single_payload(prompt: str) -> dict:
     """Wrap a single prompt into a Gemini API payload."""
-    
+
     if not prompt.strip():
         raise ValueError("Prompt cannot be empty.")
 
-    return {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [
-                    { "text": prompt }
-                ]
-            }
-        ]
-    }
+    return {"contents": [{"role": "user", "parts": [{"text": prompt}]}]}
