@@ -6,10 +6,13 @@ authors = [
     {name = "Henry Zhao",email = "75873192+henry-zhao-dev@users.noreply.github.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 dependencies = [
+    "prompt-toolkit (>=3.0.53,<4.0.0)"
 ]
 
+[project.scripts]
+retro-gemini = "retro_gemini.cli:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
