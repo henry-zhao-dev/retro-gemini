@@ -4,6 +4,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime
 
+from dotenv import load_dotenv
 from prompt_toolkit import prompt
 
 from retro_gemini import gemini_client
@@ -117,8 +118,10 @@ def main():
 
     args = parser.parse_args()
 
+    load_dotenv()
+
     # Validate environment variable
-    if not os.environ.get("GEMINI_API_KEY"):
+    if not os.getenv("GEMINI_API_KEY"):
         print(
             "Error: GEMINI_API_KEY environment variable is not set.\n"
             "Please export it using: export GEMINI_API_KEY='your_key_here'",

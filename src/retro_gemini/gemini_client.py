@@ -1,10 +1,4 @@
-"""Minimal Gemini REST API client.
-
-Requires:
-    export GEMINI_API_KEY="your-api-key"
-
-No third-party Python packages are needed.
-"""
+"""Minimal Gemini REST API client."""
 
 from __future__ import annotations
 
@@ -25,7 +19,7 @@ class GeminiAPIError(RuntimeError):
 def _get_api_key(api_key: str | None = None) -> str:
     """Return an explicitly supplied key or GEMINI_API_KEY."""
 
-    key = api_key or os.environ.get("GEMINI_API_KEY")
+    key = api_key or os.getenv("GEMINI_API_KEY")
 
     if not key:
         raise GeminiAPIError("Gemini API key not found. Set GEMINI_API_KEY first.")

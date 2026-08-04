@@ -40,23 +40,12 @@ A lightweight, interactive command-line interface (CLI) for chatting with Google
 
 ---
 
-## Setup
+## Configure your API Key
 
-Set your Gemini API key as an environment variable before running the application:
+Create a `.env` file in the root directory of this project and add your Gemini API key:
 
-**On Linux/macOS:**
-```bash
-export GEMINI_API_KEY="your_actual_api_key_here"
-```
-
-**On Windows (Command Prompt):**
-```cmd
-set GEMINI_API_KEY=your_actual_api_key_here
-```
-
-**On Windows (PowerShell):**
-```powershell
-$env:GEMINI_API_KEY="your_actual_api_key_here"
+```env
+GEMINI_API_KEY="your_actual_api_key"
 ```
 
 ---
