@@ -1,6 +1,9 @@
 import argparse
 import os
 import sys
+import time
+import threading
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -29,6 +32,41 @@ class MessageLog:
     def to_api_payload(self) -> dict:
         """Strips the timestamp for the LLM API."""
         return {"role": self.role, "parts": [{"text": self.content}]}
+
+
+@contextmanager
+def loading_animation(message: str):
+    """
+    A context manager that displays a CLI loading animation 
+    while a block of code is executing.
+    """
+    stop_event = threading.Event()
+    
+    def animate():
+        # Sleek Braille spinner characters
+        chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+        i = 0
+        while not stop_event.is_set():
+            # \r returns the cursor to the beginning of the line
+            sys.stdout.write(f"\r{message} {chars[i % len(chars)]}")
+            sys.stdout.flush()
+            time.sleep(0.08)
+            i += 1
+        
+        # Clear the loading line once finished
+        sys.stdout.write(f"\r{' ' * (len(message) + 4)}\r")
+        sys.stdout.flush()
+
+    # Start the animation in a separate thread
+    t = threading.Thread(target=animate)
+    t.start()
+    
+    try:
+        yield
+    finally:
+        # Signal the thread to stop and wait for it to finish
+        stop_event.set()
+        t.join()
 
 
 def start_chat(model: str, no_history: bool = False):
@@ -63,9 +101,11 @@ def start_chat(model: str, no_history: bool = False):
             else:
                 payload = gemini_client.single_payload(user_prompt)
 
-            response = gemini_client.generate(payload, model)
+            print()
+            with loading_animation("Thinking"):
+                response = gemini_client.generate(payload, model)
 
-            print("\nGemini:")
+            print("Gemini:")
             print(response)
             print("\n" + "-" * 60 + "\n")
 
@@ -81,7 +121,8 @@ def start_chat(model: str, no_history: bool = False):
             if "503" in str(e):
                 print(
                     "Gemini servers are currently overloaded. "
-                    "Please wait a minute and try again."
+                    "Please wait a minute and try again, or "
+                    "select a different model (see --help)."
                 )
             else:
                 print(f"A Gemini API error occurred: {e}")
