@@ -147,7 +147,7 @@ def main():
         "-m",
         "--model",
         type=str,
-        default="gemini-flash-latest",
+        default="gemini-flash-lite-latest",
         help="Specify Gemini model to use (default: gemini-flash-latest)",
     )
     parser.add_argument(
