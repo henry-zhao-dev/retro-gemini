@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from prompt_toolkit import prompt
 
 from retro_gemini import gemini_client
+from retro_gemini.settings import AppSettings
 
 
 @dataclass(frozen=True)
@@ -134,6 +135,8 @@ def start_chat(model: str, no_history: bool = False):
 
 
 def main():
+    settings = AppSettings.load()
+
     parser = argparse.ArgumentParser(
         description="Retro Gemini CLI - Interactive terminal client for Google Gemini."
     )
@@ -147,8 +150,14 @@ def main():
         "-m",
         "--model",
         type=str,
-        default="gemini-flash-lite-latest",
+        default=settings.default_model,
         help="Specify Gemini model to use (default: gemini-flash-latest)",
+    )
+    parser.add_argument(
+        "-dm",
+        "--default-model",
+        type=str,
+        help="Permanently set the default model on start-up",
     )
     parser.add_argument(
         "-n",
@@ -173,6 +182,14 @@ def main():
     model_names = gemini_client.list_model_names()
     if args.list:
         print("\n".join(model_names))
+    elif args.default_model:
+        if args.default_model in model_names:
+            settings.default_model = args.default_model
+        else:
+            print(
+                f"Model not found: {args.default_model}.\n"
+                "Please run retro-gemini --list to view all available Gemini models."
+            )
     elif args.model in model_names:
         start_chat(args.model, args.no_history)
     else:
@@ -180,6 +197,9 @@ def main():
             f"Model not found: {args.model}.\n"
             "Please run retro-gemini --list to view all available Gemini models."
         )
+
+    settings.save()
+    print(f"Settings saved to: {settings.get_path()}")
 
 
 if __name__ == "__main__":
