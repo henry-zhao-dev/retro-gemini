@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from enum import StrEnum
 from typing import Self
 
 from prompt_toolkit import prompt
@@ -12,14 +13,19 @@ EXIT_COMMANDS = {"exit", "quit"}
 SEPARATOR_WIDTH = 60
 
 
+class MessageRole(StrEnum):
+    USER = "user"
+    MODEL = "model"
+
+
 @dataclass(frozen=True, slots=True)
-class Message:
+class ChatMessage:
     timestamp: str
-    role: str
+    role: MessageRole
     content: str
 
     @classmethod
-    def create(cls, role: str, content: str) -> Self:
+    def create(cls, role: MessageRole, content: str) -> Self:
         return cls(
             timestamp=datetime.now(timezone.utc).isoformat(),
             role=role,
@@ -27,10 +33,10 @@ class Message:
         )
 
     def to_api_payload(self) -> dict:
-        return {"role": self.role, "parts": [{"text": self.content}]}
+        return {"role": self.role.value, "parts": [{"text": self.content}]}
 
 
-def _build_payload(messages: list[Message]) -> dict:
+def _build_payload(messages: list[ChatMessage]) -> dict:
     return {"contents": [message.to_api_payload() for message in messages]}
 
 
@@ -48,10 +54,10 @@ def _print_header(model: str) -> None:
 def _generate_response(
     user_prompt: str,
     model: str,
-    conversation: list[Message],
+    conversation: list[ChatMessage],
     no_context: bool,
 ) -> str:
-    user_message = Message.create("user", user_prompt)
+    user_message = ChatMessage.create(MessageRole.USER, user_prompt)
     conversation.append(user_message)
 
     if no_context:
@@ -62,7 +68,7 @@ def _generate_response(
     with spinner.loading_animation("Thinking"):
         response = gemini_client.generate(payload, model)
 
-    conversation.append(Message.create("model", response))
+    conversation.append(ChatMessage.create(MessageRole.MODEL, response))
 
     return response
 
@@ -87,7 +93,7 @@ def _print_api_error(error: gemini_client.GeminiAPIError) -> None:
 def start_chat(model: str, no_context: bool = False) -> None:
     _print_header(model)
 
-    conversation: list[Message] = []
+    conversation: list[ChatMessage] = []
 
     while True:
         try:
