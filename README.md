@@ -13,7 +13,7 @@ A lightweight, interactive command-line interface (CLI) for chatting with Google
 
 ## Prerequisites
 
-- **Python 3.8+**
+- **Python 3.11+**
 - **[Poetry](https://python-poetry.org/docs/#installation)** installed on your machine
 - A **Google Gemini API Key** (Get one from [Google AI Studio](https://aistudio.google.com/))
 
@@ -94,7 +94,7 @@ retro-gemini --list
 Every turn is treated as a brand new conversation:
 
 ```bash
-retro-gemini --no-history
+retro-gemini --no-context
 ```
 
 ---
