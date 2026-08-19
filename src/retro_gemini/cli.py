@@ -1,142 +1,16 @@
+"""Command-line parsing and application startup."""
+
 import argparse
 import os
 import sys
-import time
-import threading
-from contextlib import contextmanager
-from dataclasses import dataclass
-from datetime import datetime
 
 from dotenv import load_dotenv
-from prompt_toolkit import prompt
 
-from retro_gemini import gemini_client
+from retro_gemini import chat, gemini_client
 from retro_gemini.settings import AppSettings
 
 
-@dataclass(frozen=True)
-class MessageLog:
-    timestamp: str
-    role: str
-    content: str
-
-    @classmethod
-    def create(cls, role: str, content: str):
-        """Factory method to easily create a new log with current timestamp."""
-        return cls(
-            # Example: 2023-10-24T14:32:05.123456
-            timestamp=datetime.now().isoformat(),
-            role=role,
-            content=content,
-        )
-
-    def to_api_payload(self) -> dict:
-        """Strips the timestamp for the LLM API."""
-        return {"role": self.role, "parts": [{"text": self.content}]}
-
-
-@contextmanager
-def loading_animation(message: str):
-    """
-    A context manager that displays a CLI loading animation 
-    while a block of code is executing.
-    """
-    stop_event = threading.Event()
-    
-    def animate():
-        # Sleek Braille spinner characters
-        chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-        i = 0
-        while not stop_event.is_set():
-            # \r returns the cursor to the beginning of the line
-            sys.stdout.write(f"\r{message} {chars[i % len(chars)]}")
-            sys.stdout.flush()
-            time.sleep(0.08)
-            i += 1
-        
-        # Clear the loading line once finished
-        sys.stdout.write(f"\r{' ' * (len(message) + 4)}\r")
-        sys.stdout.flush()
-
-    # Start the animation in a separate thread
-    t = threading.Thread(target=animate)
-    t.start()
-    
-    try:
-        yield
-    finally:
-        # Signal the thread to stop and wait for it to finish
-        stop_event.set()
-        t.join()
-
-
-def start_chat(model: str, no_history: bool = False):
-    # Header Layout
-    print("=" * 60)
-    print("Retro Gemini CLI")
-    print(f"   Model: {model}")
-    print("-" * 60)
-    print("   * Press 'Enter' for a new line")
-    print("   * Press 'Esc+Enter' to submit")
-    print("   * Type 'exit' or 'quit' to leave")
-    print("=" * 60 + "\n")
-
-    history: list[MessageLog] = []
-
-    while True:
-        try:
-            print("You:")
-            user_prompt = prompt("> ", multiline=True).strip()
-
-            if not user_prompt:
-                continue
-
-            if user_prompt.lower() in ("exit", "quit"):
-                print("\nGoodbye!\n")
-                break
-
-            if not no_history:
-                log = MessageLog.create("user", user_prompt)
-                history.append(log)
-                payload = {"contents": [log.to_api_payload() for log in history]}
-            else:
-                payload = gemini_client.single_payload(user_prompt)
-
-            print()
-            with loading_animation("Thinking"):
-                response = gemini_client.generate(payload, model)
-
-            print("Gemini:")
-            print(response)
-            print("\n" + "-" * 60 + "\n")
-
-            if not no_history:
-                log = MessageLog.create("model", response)
-                history.append(log)
-
-        except (KeyboardInterrupt, EOFError):
-            print("\nGoodbye!")
-            break
-
-        except gemini_client.GeminiAPIError as e:
-            if "503" in str(e):
-                print(
-                    "Gemini servers are currently overloaded. "
-                    "Please wait a minute and try again, or "
-                    "select a different model (see --help)."
-                )
-            else:
-                print(f"A Gemini API error occurred: {e}")
-            break
-
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-            break
-
-
-def main():
-    settings = AppSettings.load()
-
+def parse_args(default_model: str) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Retro Gemini CLI - Interactive terminal client for Google Gemini."
     )
@@ -150,8 +24,8 @@ def main():
         "-m",
         "--model",
         type=str,
-        default=settings.default_model,
-        help="Specify Gemini model to use (default: gemini-flash-latest)",
+        default=default_model,
+        help=f"Specify Gemini model to use (default: {default_model})",
     )
     parser.add_argument(
         "-dm",
@@ -161,17 +35,18 @@ def main():
     )
     parser.add_argument(
         "-n",
-        "--no-history",
+        "--no-context",
+        dest="no_context",
         action="store_true",
-        help="Process prompt without sending previous conversation history",
+        help="Process each prompt without sending previous conversation context",
     )
+    return parser.parse_args()
 
-    args = parser.parse_args()
 
+def require_api_key() -> None:
     load_dotenv()
-
-    # Validate environment variable
-    if not os.getenv("GEMINI_API_KEY"):
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or not api_key.strip():
         print(
             "Error: GEMINI_API_KEY environment variable is not set.\n"
             "Please export it using: export GEMINI_API_KEY='your_key_here'",
@@ -179,7 +54,18 @@ def main():
         )
         sys.exit(1)
 
-    model_names = gemini_client.list_model_names()
+
+def get_model_names() -> list[str]:
+    try:
+        return gemini_client.list_model_names()
+    except gemini_client.GeminiAPIError as error:
+        print(f"Failed to retrieve Gemini models: {error}", file=sys.stderr)
+        sys.exit(1)
+
+
+def handle_command(
+    args: argparse.Namespace, settings: AppSettings, model_names: list[str]
+) -> None:
     if args.list:
         print("\n".join(model_names))
     elif args.default_model:
@@ -190,14 +76,23 @@ def main():
                 f"Model not found: {args.default_model}.\n"
                 "Please run retro-gemini --list to view all available Gemini models."
             )
+            sys.exit(1)
     elif args.model in model_names:
-        start_chat(args.model, args.no_history)
+        chat.start_chat(args.model, args.no_context)
     else:
         print(
             f"Model not found: {args.model}.\n"
             "Please run retro-gemini --list to view all available Gemini models."
         )
+        sys.exit(1)
 
+
+def main() -> None:
+    settings = AppSettings.load()
+    args = parse_args(settings.default_model)
+    require_api_key()
+
+    handle_command(args, settings, get_model_names())
     settings.save()
     print(f"Settings saved to: {settings.get_path()}")
 

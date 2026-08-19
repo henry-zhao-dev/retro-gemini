@@ -1,4 +1,4 @@
-"""Minimal Gemini REST API client."""
+"""HTTP requests and response parsing for the Gemini REST API."""
 
 from __future__ import annotations
 
@@ -15,13 +15,17 @@ API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 class GeminiAPIError(RuntimeError):
     """Raised when the Gemini API returns an error."""
 
+    def __init__(self, message: str, *, status_code: int | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+
 
 def _get_api_key(api_key: str | None = None) -> str:
     """Return an explicitly supplied key or GEMINI_API_KEY."""
 
-    key = api_key or os.getenv("GEMINI_API_KEY")
+    key = api_key if api_key is not None else os.getenv("GEMINI_API_KEY")
 
-    if not key:
+    if not key or not key.strip():
         raise GeminiAPIError("Gemini API key not found. Set GEMINI_API_KEY first.")
 
     return key.strip()
@@ -69,7 +73,8 @@ def _request_json(
             message = body
 
         raise GeminiAPIError(
-            f"Gemini API returned HTTP {error.code}: {message}"
+            f"Gemini API returned HTTP {error.code}: {message}",
+            status_code=error.code,
         ) from error
 
     except urllib.error.URLError as error:
@@ -96,7 +101,7 @@ def list_models(
     page_token: str | None = None
 
     while True:
-        query = {"pageSize": 1000}
+        query: dict[str, int | str] = {"pageSize": 1000}
 
         if page_token:
             query["pageToken"] = page_token
@@ -180,12 +185,3 @@ def generate(
         raise GeminiAPIError(f"Gemini returned no text content: {result}")
 
     return "".join(text_parts)
-
-
-def single_payload(prompt: str) -> dict:
-    """Wrap a single prompt into a Gemini API payload."""
-
-    if not prompt.strip():
-        raise ValueError("Prompt cannot be empty.")
-
-    return {"contents": [{"role": "user", "parts": [{"text": prompt}]}]}

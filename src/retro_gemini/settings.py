@@ -1,5 +1,7 @@
+"""Loading and saving persistent application settings."""
+
 import json
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from platformdirs import user_config_path
 
@@ -31,18 +33,24 @@ class AppSettings:
         if missing/corrupted.
         """
         config_file = cls.get_path()
+        if not config_file.exists():
+            return cls()
 
-        if config_file.exists():
-            try:
-                with open(config_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    # Unpack the dictionary into the dataclass arguments
-                    return cls(
-                        **{k: v for k, v in data.items() if k in cls.__annotations__}
-                    )
-            except Exception:
-                # Fallback if file is corrupted
-                pass
+        try:
+            with open(config_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return cls()
 
-        # Return default instance if file doesn't exist or failed to load
-        return cls()
+        if not isinstance(data, dict):
+            return cls()
+
+        setting_names = {field.name for field in fields(cls) if field.init}
+        saved_settings = {
+            key: value for key, value in data.items() if key in setting_names
+        }
+
+        try:
+            return cls(**saved_settings)
+        except TypeError:
+            return cls()
