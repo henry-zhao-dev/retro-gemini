@@ -6,7 +6,7 @@ A lightweight, interactive command-line interface (CLI) for chatting with Google
 
 - **Interactive Chat**: Multiline terminal prompt with a retro layout.
 - **List Models**: View all available Google Gemini models.
-- **Model Selection**: Easily switch between different Gemini models.
+- **Model Selection**: Switch models for one session or save a new default.
 - **Secure**: Uses environment variables to handle API keys safely.
 
 ---
@@ -54,7 +54,8 @@ GEMINI_API_KEY="your_actual_api_key"
 
 ### Start Interactive Chat
 
-Run the app using the default model (`gemini-flash-latest`):
+Run the app using the saved default model. On first use, the default is
+`gemini-flash-lite-latest`:
 
 ```bash
 retro-gemini
@@ -62,11 +63,23 @@ retro-gemini
 
 ### Specify a Model
 
-Start the chat session using a specific Gemini model:
+Start the current chat session using a specific Gemini model. This does not
+change the saved default:
 
 ```bash
 retro-gemini --model gemini-3.1-pro-preview
 ```
+
+### Set the Default Model
+
+Save a model as the default for future sessions:
+
+```bash
+retro-gemini --default-model gemini-3.1-pro-preview
+```
+
+The model must appear in the output of `retro-gemini --list`. You can still
+override the saved default for a single session with `--model`.
 
 ### List Available Models
 
