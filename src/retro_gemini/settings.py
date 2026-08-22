@@ -39,7 +39,7 @@ class AppSettings:
         try:
             with open(config_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
-        except (OSError, UnicodeError, json.JSONDecodeError):
+        except OSError, UnicodeError, json.JSONDecodeError:
             return cls()
 
         if not isinstance(data, dict):

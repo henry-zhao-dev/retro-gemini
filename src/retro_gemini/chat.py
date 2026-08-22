@@ -111,7 +111,7 @@ def start_chat(model: str, no_context: bool = False) -> None:
             response = _generate_response(user_prompt, model, conversation, no_context)
             _print_response(response)
 
-        except (KeyboardInterrupt, EOFError):
+        except KeyboardInterrupt, EOFError:
             print("\nGoodbye!")
             return
 

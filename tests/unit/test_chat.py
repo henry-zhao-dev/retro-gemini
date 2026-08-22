@@ -94,9 +94,7 @@ def test_no_context_still_records_the_conversation(monkeypatch):
         lambda payload, model: "Hello from Gemini",
     )
 
-    chat._generate_response(
-        "hello", "gemini-pro-test", conversation, no_context=True
-    )
+    chat._generate_response("hello", "gemini-pro-test", conversation, no_context=True)
 
     assert [(message.role, message.content) for message in conversation] == [
         ("user", "hello"),
