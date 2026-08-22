@@ -9,13 +9,13 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "prompt-toolkit (>=3.0.53,<4.0.0)",
-    "dotenv (>=0.9.9,<0.10.0)",
-    "platformdirs (>=4.11.3,<5.0.0)"
+    "platformdirs (>=4.11.3,<5.0.0)",
+    "python-dotenv (>=1.2.3,<2.0.0)"
 ]
 
 [dependency-groups]
 dev = [
-    "pytest (>=8.4.2,<9.0.0)"
+    "pytest (>=9.1.1,<10.0.0)"
 ]
 
 [project.scripts]
